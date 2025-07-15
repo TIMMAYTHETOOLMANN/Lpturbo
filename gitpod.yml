@@ -1,0 +1,14 @@
+tasks:
+  - name: Install
+    init: npm install
+  - name: Compile
+    init: npx hardhat compile
+  - name: Deploy
+    init: npx hardhat run scripts/deploy.js --network base
+  - name: Auto-Reclaim
+    init: node scripts/autoReclaim.js
+vscode:
+  extensions:
+    - NomicFoundation.hardhat-solidity
+    - dbaeumer.vscode-eslint
+    - esbenp.prettier-vscode
