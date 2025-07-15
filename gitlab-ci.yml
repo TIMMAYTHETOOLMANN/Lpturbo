@@ -1,0 +1,38 @@
+# Ensure lockfile is present for Node.js jobs
+stages:
+  - setup
+  - build
+  - test
+  - deploy
+
+setup:
+  stage: setup
+  script:
+    - bash patch-lockfile.sh
+  tags:
+    - docker
+
+build:
+  stage: build
+  script:
+    - pnpm install --frozen-lockfile
+    - pnpm build
+  only:
+    - main
+  tags:
+    - docker
+
+test:
+  stage: test
+  script:
+    - pnpm test
+  tags:
+    - docker
+
+deploy:
+  stage: deploy
+  script:
+    - echo "Deploy step (implement as needed)"
+  tags:
+    - docker
+  when: manual

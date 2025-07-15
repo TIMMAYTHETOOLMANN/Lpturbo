@@ -1,0 +1,2 @@
+# Ensure pnpm is used by default in CI and local
+package-manager=pnpm
