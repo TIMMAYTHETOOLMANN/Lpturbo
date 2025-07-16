@@ -6,7 +6,9 @@
   "scripts": {
     "compile": "npx hardhat compile",
     "deploy": "npx hardhat run scripts/deploy.js --network base",
-    "auto-reclaim": "node scripts/autoReclaim.js"
+    "auto-reclaim": "node scripts/autoReclaim.js",
+    "manual-reclaim": "npx hardhat run scripts/manualReclaim.js --network base",
+    "status": "npx hardhat run scripts/status.js --network base"
   },
   "author": "",
   "license": "MIT",

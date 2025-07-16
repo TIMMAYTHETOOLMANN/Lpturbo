@@ -13,6 +13,7 @@ interface IUniswapV2Router02 {
     ) external payable returns (uint amountToken, uint amountETH, uint liquidity);
 
     function factory() external pure returns (address);
+    function WETH() external pure returns (address);
 }
 
 interface IUniswapV2Factory {
@@ -51,10 +52,10 @@ contract SovereignFlashLock is ERC20, Ownable, ReentrancyGuard {
     function initializeLiquidity(uint256 tokenAmount) external payable onlyOwner nonReentrant {
         require(!liquidityInitialized, "Already initialized");
         require(tokenAmount > 0 && msg.value > 0, "ETH or token amount zero");
-        require(balanceOf(msg.sender) >= tokenAmount, "Insufficient token balance");
+        require(balanceOf(address(this)) >= tokenAmount, "Insufficient token balance in contract");
 
-        // Approve tokens to router
-        _approve(msg.sender, BASE_UNISWAP_ROUTER, tokenAmount);
+        // Approve tokens to router from contract
+        _approve(address(this), BASE_UNISWAP_ROUTER, tokenAmount);
 
         IUniswapV2Router02 router = IUniswapV2Router02(BASE_UNISWAP_ROUTER);
         uint deadline = block.timestamp + 60;
