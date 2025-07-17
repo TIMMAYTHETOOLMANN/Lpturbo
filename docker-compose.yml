@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  lpturbo:
+    build: .
+    ports:
+      - "3000:3000"
+      - "8000:8000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    env_file:
+      - .env
+    restart: unless-stopped
+    
+  db:
+    image: postgres:13
+    environment:
+      - POSTGRES_DB=lpturbo
+      - POSTGRES_USER=lpturbo
+      - POSTGRES_PASSWORD=lpturbo
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
