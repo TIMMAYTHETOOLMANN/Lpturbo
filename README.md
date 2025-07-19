@@ -49,10 +49,24 @@ lpturbo/
 ├── scripts/
 │   ├── deploy.js
 │   └── autoReclaim.js
+├── test/
+│   └── walletCredentials.test.js
 ├── README.md
+├── WALLET_CONFIG.md         # Wallet credential setup guide
+├── .env.example             # Environment variable template
 ├── hardhat.config.js
 ├── package.json
 └── .gitpod.yml
+
+## 🔐 Wallet Credential Requirements
+
+**CRITICAL**: This project requires proper ERC-20 wallet credentials configuration:
+
+- **PRIVATE_KEY**: Your funding wallet's private key (required for all operations)
+- **FUNDING_WALLET**: The address where LP tokens will be sent after auto-reclaim
+- **CONTRACT_ADDRESS**: Set after deployment for auto-reclaim functionality
+
+See [WALLET_CONFIG.md](WALLET_CONFIG.md) for complete setup instructions.
 
 ---
 
@@ -62,18 +76,31 @@ lpturbo/
 2. Install dependencies:
    ```bash
    npm install
+   ```
 
-	3.	Compile contracts:
+3. **Configure Wallet Credentials** (REQUIRED):
+   ```bash
+   cp .env.example .env
+   # Edit .env file with your actual wallet credentials
+   ```
+   See [WALLET_CONFIG.md](WALLET_CONFIG.md) for detailed setup instructions.
 
-npx hardhat compile
+4. Compile contracts:
+   ```bash
+   npx hardhat compile
+   ```
 
+5. Deploy to Base:
+   ```bash
+   npx hardhat run scripts/deploy.js --network base
+   ```
 
-	4.	Deploy to Base:
+6. Update CONTRACT_ADDRESS in .env file with deployed contract address.
 
-npx hardhat run scripts/deploy.js --network base
-
-
-	5.	Wait 30 minutes — autoReclaim.js is scheduled to trigger liquidity reclaim automatically post-lock.
+7. Wait 30 minutes — autoReclaim.js is scheduled to trigger liquidity reclaim automatically post-lock:
+   ```bash
+   npm run auto-reclaim
+   ```
 
 ⸻
 
