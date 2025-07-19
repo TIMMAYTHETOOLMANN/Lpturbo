@@ -122,3 +122,14 @@ The `autoReclaim.js` script will:
 > No manual input is needed after `deploy.js` completes.
 
 Once you're ready, create the `lpturbo` repository, inject this README, and instruct Copilot to "build and deploy based on README." I will stand by to generate the actual Solidity + scripts immediately after.
+
+---
+
+## Secure Environment Configuration
+
+1. Copy `.env.example` to `.env`, and fill in your credentials.
+2. Never commit `.env` to git.
+3. All environment variables are accessed via `config.js`.
+4. Credentials are injected securely at runtime.
+
+See `config.js` and `index.js` for integration examples.
