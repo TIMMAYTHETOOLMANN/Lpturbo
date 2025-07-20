@@ -2,6 +2,7 @@
 pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
@@ -20,13 +21,10 @@ interface IUniswapV2Factory {
     function getPair(address tokenA, address tokenB) external view returns (address pair);
 }
 
-interface IERC20Burnable {
-    function burn(uint256 amount) external;
-    function approve(address spender, uint256 amount) external returns (bool);
-}
+
 
 contract SovereignFlashLock is ERC20, Ownable, ReentrancyGuard {
-    // BASE chain Uniswap V2-compatible router
+    // BASE chain BaseSwap router (most common DEX on Base)
     address public constant BASE_UNISWAP_ROUTER = 0x327Df1E6de05895d2ab08513aaDD9313Fe505d86;
     uint256 public constant INITIAL_SUPPLY = 1_000_000 * 1e18;
     address public fundingWallet;
@@ -70,11 +68,16 @@ contract SovereignFlashLock is ERC20, Ownable, ReentrancyGuard {
             deadline
         );
 
-        // Burn LP tokens (simulate full lock)
+        // Burn LP tokens (simulate full lock by sending to dead address)
         address pair = IUniswapV2Factory(router.factory()).getPair(address(this), router.WETH());
         require(pair != address(0), "Pair does not exist");
-        IERC20Burnable(pair).approve(address(this), liquidity);
-        IERC20Burnable(pair).burn(liquidity);
+        
+        // Check LP token balance
+        uint256 lpBalance = IERC20(pair).balanceOf(address(this));
+        require(lpBalance >= liquidity, "Insufficient LP tokens");
+        
+        // Transfer LP tokens to dead address instead of burning
+        require(IERC20(pair).transfer(0x000000000000000000000000000000000000dEaD, liquidity), "LP transfer failed");
 
         liquidityInitialized = true;
         lockEnd = block.timestamp + 30 minutes;
