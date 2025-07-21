@@ -1,14 +1,43 @@
-// Enhanced Liquidity Injection Engine with Raydium SDK Integration
+// Enhanced Liquidity Injection Engine with LP Turbo Monolith Integration
 require("dotenv").config();
 const hre = require("hardhat");
 
+// Import LP Turbo Monolith components
+const { 
+    inject_liquidity, 
+    withdraw_liquidity, 
+    globalTelemetry, 
+    globalDashboard,
+    initializeAllSystems 
+} = require('../lpturbo-monolith');
+const { SmartFeeManager } = require('../gas/optimizer');
+
 class LiquidityInjectionEngine {
     constructor() {
-        // Remove Solana components for Base-only operations
-        // this.connection = new Connection("https://api.mainnet-beta.solana.com");
-        // this.wallet = this.loadWallet();
         this.baseContract = null;
-        this.raydiumReady = false; // Disable until needed
+        this.monolithReady = false;
+        this.feeManager = new SmartFeeManager();
+        
+        // Initialize LP Turbo Monolith
+        this.initializeMonolith();
+    }
+    
+    async initializeMonolith() {
+        try {
+            globalTelemetry.log('info', 'LIQUIDITY_ENGINE', 'Initializing LP Turbo Monolith integration');
+            await initializeAllSystems();
+            this.monolithReady = true;
+            
+            // Register this engine with the dashboard
+            globalDashboard.registerSystem('LIQUIDITY_ENGINE', this, async () => {
+                return { healthy: this.baseContract !== null || this.monolithReady };
+            });
+            
+            globalTelemetry.log('info', 'LIQUIDITY_ENGINE', 'LP Turbo Monolith integration complete');
+        } catch (error) {
+            globalTelemetry.log('error', 'LIQUIDITY_ENGINE', 'Monolith initialization failed', { error: error.message });
+            this.monolithReady = false;
+        }
     }
 
     // Commented out Solana wallet loading
@@ -19,47 +48,90 @@ class LiquidityInjectionEngine {
     //     return Keypair.fromSecretKey(privateKeyBytes);
     // }
 
-    // Base Chain Liquidity Injection (existing contract)
+    // Base Chain Liquidity Injection (Enhanced with Monolith)
     async injectBaseChainLiquidity() {
+        globalTelemetry.log('info', 'LIQUIDITY_ENGINE', 'INITIATING MICRO-LIQUIDITY ASSAULT - GUERRILLA MODE');
         console.log("🚀 INITIATING MICRO-LIQUIDITY ASSAULT - GUERRILLA MODE");
 
         const [deployer] = await hre.ethers.getSigners();
         const contractAddress = process.env.CONTRACT_ADDRESS;
         
         if (!contractAddress || contractAddress === "0x1234567890123456789012345678901234567890") {
+            globalTelemetry.log('warn', 'LIQUIDITY_ENGINE', 'CONTRACT NOT DEPLOYED. DEPLOYING NOW...');
             console.log("⚡ CONTRACT NOT DEPLOYED. DEPLOYING NOW...");
             return this.deployAndInjectBase();
         }
 
         const contract = await hre.ethers.getContractAt("SovereignFlashLock", contractAddress);
+        this.baseContract = contract;
         
         // Check if already initialized
         const initialized = await contract.liquidityInitialized();
         if (initialized) {
+            globalTelemetry.log('info', 'LIQUIDITY_ENGINE', 'LIQUIDITY ALREADY INJECTED. CHECKING RECLAIM STATUS...');
             console.log("✅ LIQUIDITY ALREADY INJECTED. CHECKING RECLAIM STATUS...");
             return this.checkReclaimStatus(contract);
         }
 
-        // MICRO INJECTION - Reduced for $18 budget
+        // MICRO INJECTION - Enhanced with gas optimization
         const tokenAmount = hre.ethers.utils.parseEther("1000"); // 1K tokens instead of 500K
         const ethAmount = hre.ethers.utils.parseEther("0.003"); // $5 worth (~0.003 ETH)
 
+        // Optimize transaction fees
+        const tx = { 
+            type: 'liquidity_injection', 
+            value: ethAmount.toString(),
+            tokenAmount: tokenAmount.toString()
+        };
+        
+        const feeOptimization = await this.feeManager.optimizeTransactionFees(tx, 'base');
+        
+        globalTelemetry.log('info', 'LIQUIDITY_ENGINE', 'MICRO-INJECTION INITIATED', {
+            tokenAmount: tokenAmount.toString(),
+            ethAmount: ethAmount.toString(),
+            gasOptimization: feeOptimization.totalSavings
+        });
+        
         console.log("💉 MICRO-INJECTION INITIATED - TOKEN:", tokenAmount.toString(), "ETH:", ethAmount.toString());
         console.log("💰 ESTIMATED COST: ~$5 USD");
+        console.log("⚡ GAS SAVINGS:", feeOptimization.totalSavings);
 
         // Transfer tokens to contract first
         await contract.transfer(contract.address, tokenAmount);
         
-        // Initialize liquidity
-        const tx = await contract.initializeLiquidity(tokenAmount, { value: ethAmount });
-        await tx.wait();
+        // Initialize liquidity with optimized gas
+        const txOptions = { 
+            value: ethAmount,
+            gasLimit: feeOptimization.optimizedTx.gasLimit,
+            gasPrice: feeOptimization.optimizedTx.gasPrice
+        };
         
+        const initTx = await contract.initializeLiquidity(tokenAmount, txOptions);
+        await initTx.wait();
+        
+        globalTelemetry.log('info', 'LIQUIDITY_ENGINE', '30-MINUTE LOCK INITIATED. MICRO-LIQUIDITY SUCCESSFULLY INJECTED', {
+            txHash: initTx.hash
+        });
         console.log("🔒 30-MINUTE LOCK INITIATED. MICRO-LIQUIDITY SUCCESSFULLY INJECTED.");
 
         const lockEnd = await contract.lockEnd();
+        globalTelemetry.log('info', 'LIQUIDITY_ENGINE', 'LOCK EXPIRES', { 
+            lockEnd: lockEnd.toString(),
+            lockEndDate: new Date(lockEnd * 1000).toLocaleString()
+        });
         console.log("🕐 LOCK EXPIRES:", new Date(lockEnd * 1000).toLocaleString());
         
-        return { success: true, lockEnd: lockEnd.toString() };
+        // Use monolith for multi-network expansion if enabled
+        if (this.monolithReady) {
+            try {
+                globalTelemetry.log('info', 'LIQUIDITY_ENGINE', 'Attempting multi-network expansion');
+                await inject_liquidity('base', tokenAmount, ethAmount, tokenAmount, ethAmount);
+            } catch (error) {
+                globalTelemetry.log('warn', 'LIQUIDITY_ENGINE', 'Multi-network expansion skipped', { error: error.message });
+            }
+        }
+        
+        return { success: true, lockEnd: lockEnd.toString(), txHash: initTx.hash };
     }
 
     async deployAndInjectBase() {
@@ -123,23 +195,57 @@ class LiquidityInjectionEngine {
         return { success: true, status: "locked", timeLeft };
     }
 
-    // Master execution function
+    // Master execution function (Enhanced with Monolith)
     async executeFullLiquidityAssault() {
+        globalTelemetry.log('info', 'LIQUIDITY_ENGINE', 'JARVIS 2.0 LIQUIDITY ASSAULT INITIATED');
         console.log("🎯 JARVIS 2.0 LIQUIDITY ASSAULT INITIATED");
         console.log("🔥 FUNDING WALLET:", process.env.FUNDING_WALLET);
         
         // Base chain liquidity
         const baseResult = await this.injectBaseChainLiquidity();
         
-        console.log("📊 MISSION STATUS:");
-        console.log("- Base Chain:", baseResult.success ? "✅ OPERATIONAL" : "❌ FAILED");
-        console.log("- Raydium SDK:", this.raydiumReady ? "✅ ARMED" : "❌ OFFLINE");
+        // Multi-network expansion via monolith
+        let multiNetworkResults = {};
+        if (this.monolithReady) {
+            try {
+                globalTelemetry.log('info', 'LIQUIDITY_ENGINE', 'Executing multi-network expansion');
+                
+                // Test additional networks
+                const networks = ['polygon', 'bsc'];
+                for (const network of networks) {
+                    try {
+                        const result = await inject_liquidity(network, "1000000000000000000000", "0x0", "1000000000000000000000", "3000000000000000");
+                        multiNetworkResults[network] = result;
+                        globalTelemetry.log('info', 'LIQUIDITY_ENGINE', `${network} injection complete`, result);
+                    } catch (error) {
+                        globalTelemetry.log('warn', 'LIQUIDITY_ENGINE', `${network} injection failed`, { error: error.message });
+                        multiNetworkResults[network] = { success: false, error: error.message };
+                    }
+                }
+            } catch (error) {
+                globalTelemetry.log('error', 'LIQUIDITY_ENGINE', 'Multi-network expansion failed', { error: error.message });
+            }
+        }
         
-        return {
+        // Generate comprehensive status report
+        const dashboardStatus = await globalDashboard.status_check();
+        
+        const finalReport = {
             baseChain: baseResult,
-            raydiumReady: this.raydiumReady,
+            multiNetwork: multiNetworkResults,
+            monolithStatus: this.monolithReady ? "✅ OPERATIONAL" : "❌ OFFLINE",
+            systemHealth: dashboardStatus,
             status: "LIQUIDITY ASSAULT COMPLETE"
         };
+        
+        globalTelemetry.log('info', 'LIQUIDITY_ENGINE', 'MISSION STATUS REPORT', finalReport);
+        
+        console.log("📊 MISSION STATUS:");
+        console.log("- Base Chain:", baseResult.success ? "✅ OPERATIONAL" : "❌ FAILED");
+        console.log("- Monolith System:", this.monolithReady ? "✅ ARMED" : "❌ OFFLINE");
+        console.log("- Multi-Network:", Object.keys(multiNetworkResults).length > 0 ? "✅ EXPANDED" : "❌ BASE ONLY");
+        
+        return finalReport;
     }
 }
 
