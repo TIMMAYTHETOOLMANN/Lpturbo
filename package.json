@@ -9,7 +9,10 @@
     "auto-reclaim": "node scripts/autoReclaim.js",
     "liquidity-assault": "node scripts/liquidityEngine.js",
     "inject": "node scripts/liquidityEngine.js",
-    "test": "npx hardhat test"
+    "test": "npx hardhat test",
+    "monolith": "node lpturbo-monolith.js",
+    "integration-test": "node test/integration.test.js",
+    "optimize": "npm run monolith && npm run integration-test"
   },
   "author": "",
   "license": "MIT",
