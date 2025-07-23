@@ -22,7 +22,12 @@
     "security": "python3 main.py security --check",
     "config": "python3 main.py config --show",
     "emergency": "python3 main.py emergency-stop",
-    "interactive": "node cli/index.js interactive"
+    "interactive": "node cli/index.js interactive",
+    "harden": "node scripts/system-hardening.js",
+    "security-scan": "node scripts/security-analyzer.js",
+    "performance-test": "node scripts/performance-tester.js",
+    "fuzz-test": "node scripts/fuzzing-engine.js",
+    "system-symphony": "npm run harden"
   },
   "author": "",
   "license": "MIT",
