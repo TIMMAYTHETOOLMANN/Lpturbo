@@ -12,7 +12,17 @@
     "test": "npx hardhat test",
     "monolith": "node lpturbo-monolith.js",
     "integration-test": "node test/integration.test.js",
-    "optimize": "npm run monolith && npm run integration-test"
+    "optimize": "npm run monolith && npm run integration-test",
+    "start": "python3 main.py init",
+    "status": "python3 main.py status",
+    "cli": "node cli/index.js",
+    "api": "node -e \"const {LPTurboAPI} = require('./api'); new LPTurboAPI(3000).start()\"",
+    "main": "python3 main.py",
+    "health": "python3 main.py health",
+    "security": "python3 main.py security --check",
+    "config": "python3 main.py config --show",
+    "emergency": "python3 main.py emergency-stop",
+    "interactive": "node cli/index.js interactive"
   },
   "author": "",
   "license": "MIT",
