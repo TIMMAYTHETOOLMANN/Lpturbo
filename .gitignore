@@ -32,3 +32,7 @@ typechain-types
 
 # Logs
 *.log
+
+# Hardening reports (regenerated on each run)
+hardening-report.json
+TACTICAL-REPORT.md
